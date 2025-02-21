@@ -14,29 +14,42 @@ spec:
       labels:
         service: coworking
     spec:
+      imagePullSecrets:
+      - name: ecr-registry
       containers:
       - name: coworking
-        image: 992308305852.dkr.ecr.us-east-1.amazonaws.com/my-repository:v1
+        image: 992308305852.dkr.ecr.us-east-1.amazonaws.com/coworking-analytics:latest
+        command: ["sleep", "infinity"]
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /health_check
-            port: 5153
-          initialDelaySeconds: 5
+            port: 5000
+          initialDelaySeconds: 30
           timeoutSeconds: 2
         readinessProbe:
           httpGet:
             path: "/readiness_check"
-            port: 5153
-          initialDelaySeconds: 5
+            port: 5000
+          initialDelaySeconds: 30
           timeoutSeconds: 5
         envFrom:
         - configMapRef:
             name: coworking-config
         env:
+        - name: DB_USERNAME
+          value: "postgres"
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: coworking-postgres-postgresql
               key: postgres-password
+        - name: DB_HOST
+          value: "coworking-postgres-postgresql.default.svc.cluster.local"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "postgres"
       restartPolicy: Always
+
+    
